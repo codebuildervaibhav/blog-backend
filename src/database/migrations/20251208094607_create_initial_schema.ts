@@ -1,19 +1,19 @@
 import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
-  // 1. Enable UUID extension
+  // 1. Enable UUID extension (Still good to have for manual SQL queries)
   await knex.raw('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
 
   // -------------------------
   // Table: Users
   // -------------------------
   await knex.schema.createTable('users', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('id').primary();
+
     table.string('email').unique().notNullable();
     table.string('display_name').notNullable();
     table.string('avatar_url').nullable();
     table.text('bio').nullable();
-    // Role: 'admin' manages system, 'user' is standard
     table.enum('role', ['admin', 'user']).defaultTo('user');
     table.timestamps(true, true);
   });
@@ -36,7 +36,8 @@ export async function up(knex: Knex): Promise<void> {
   // Table: Social Auth
   // -------------------------
   await knex.schema.createTable('social_auth', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('id').primary();
+
     table.uuid('user_id').references('id').inTable('users').onDelete('CASCADE');
     table.string('provider').notNullable();
     table.string('provider_account_id').notNullable();
@@ -48,30 +49,44 @@ export async function up(knex: Knex): Promise<void> {
   // Table: Posts
   // -------------------------
   await knex.schema.createTable('posts', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('id').primary();
+
+    // Index added for performance (Find all posts by user)
     table
       .uuid('author_id')
       .references('id')
       .inTable('users')
-      .onDelete('CASCADE');
+      .onDelete('CASCADE')
+      .index();
+
     table.string('title').notNullable();
     table.string('slug').unique().notNullable();
     table.text('content').notNullable();
-    table.boolean('is_published').defaultTo(false);
+
+    // Index added for performance (Find only published posts)
+    table.boolean('is_published').defaultTo(false).index();
+
     table.specificType('tags', 'TEXT[]');
     table.jsonb('metadata').defaultTo('{}');
+
     // Counters
     table.integer('likes_count').defaultTo(0);
     table.integer('comments_count').defaultTo(0);
     table.integer('views_count').defaultTo(0);
+
     table.timestamps(true, true);
+
+    // GIN Indexes for fast search on Arrays and JSON
+    table.index(['tags'], 'idx_posts_tags', 'GIN');
+    table.index(['metadata'], 'idx_posts_metadata', 'GIN');
   });
-    
+
   // -------------------------
   // Table: Trending Posts
   // -------------------------
   await knex.schema.createTable('trending_posts', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('id').primary();
+
     table.uuid('post_id').references('id').inTable('posts').onDelete('CASCADE');
     table.float('trend_score').notNullable();
     table.integer('rank').notNullable();
@@ -82,7 +97,8 @@ export async function up(knex: Knex): Promise<void> {
   // Table: Comments
   // -------------------------
   await knex.schema.createTable('comments', (table) => {
-    table.uuid('id').primary().defaultTo(knex.raw('uuid_generate_v4()'));
+    table.uuid('id').primary();
+
     table.uuid('post_id').references('id').inTable('posts').onDelete('CASCADE');
     table
       .uuid('user_id')
