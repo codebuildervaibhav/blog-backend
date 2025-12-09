@@ -1,4 +1,9 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Knex } from 'knex';
 import * as bcrypt from 'bcrypt';
@@ -17,6 +22,12 @@ export class AuthService {
 
   // 1. REGISTER (Atomic Transaction)
   async register(email: string, password: string, displayName: string) {
+    // First, check if a user with this email already exists
+    const existingUser = await this.usersService.findByEmail(email);
+    if (existingUser) {
+      throw new ConflictException('User with this email already exists');
+    }
+
     // Start a transaction so if password fails, user isn't created
     return this.knex.transaction(async (trx) => {
       // A. Create User (using trx to ensure it's part of transaction)

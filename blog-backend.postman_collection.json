@@ -127,7 +127,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"author_id\": \"YOUR_USER_ID\",\n  \"title\": \"My First Post\",\n  \"slug\": \"my-first-post\",\n  \"content\": \"This is the content of my first post.\",\n  \"is_published\": true,\n  \"tags\": [\"nest\", \"typescript\"]\n}"
+              "raw": "{\n  \"title\": \"My First Post\",\n  \"slug\": \"my-first-post\",\n  \"content\": \"This is the content of my first post.\",\n  \"is_published\": true,\n  \"image_url\": \"https://example.com/my-image.jpg\",\n  \"tags\": [\"nest\", \"typescript\"]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/posts",
@@ -172,7 +172,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"content\": \"This is the updated content.\"\n}"
+              "raw": "{\n  \"content\": \"This is the updated content.\",\n  \"image_url\": \"https://example.com/my-updated-image.jpg\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/posts/:id",

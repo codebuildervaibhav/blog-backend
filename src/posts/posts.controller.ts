@@ -38,7 +38,10 @@ export class PostsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updates: Partial<PostModel>) {
+  update(
+    @Param('id') id: string,
+    @Body() updates: Partial<Omit<PostModel, 'id' | 'author_id'>>,
+  ) {
     return this.postsService.update(id, updates);
   }
 

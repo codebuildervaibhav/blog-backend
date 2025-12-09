@@ -9,6 +9,7 @@ export interface Post {
   slug: string;
   content: string;
   is_published: boolean;
+  image_url?: string;
   tags: string[];
   metadata: Record<string, any>;
   created_at: Date;
